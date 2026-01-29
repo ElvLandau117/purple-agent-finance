@@ -1,0 +1,25 @@
+[project]
+name = "purple-agent-finance"
+version = "0.1.0"
+description = "A finance-focused purple agent for AgentBeats"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "a2a-sdk[http-server]>=0.3.20",
+    "aiohttp==3.11.18",
+    "backoff==2.2.1",
+    "beautifulsoup4==4.12.3",
+    "google-search-results==2.4.2",
+    "model-library==0.1.7",
+    "python-dotenv==1.2.1",
+    "requests==2.32.3",
+    "sec-api==1.0.29",
+    "uvicorn>=0.38.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.1",
+]
