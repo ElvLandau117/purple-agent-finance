@@ -1,7 +1,7 @@
 import os
 
 from a2a.server.tasks import TaskUpdater
-from a2a.types import Message, Part, TaskState, TextPart
+from a2a.types import Message, Part, TaskState, TextPart, DataPart
 from a2a.utils import get_message_text, new_agent_text_message
 
 from model_library.base import LLMConfig
@@ -40,7 +40,7 @@ class Agent:
                     max_turns=max_turns,
                     tools=tools,
                     llm_config=LLMConfig(
-                        max_output_tokens=max_output_tokens,
+                        max_tokens=max_output_tokens,
                         temperature=temperature,
                     ),
                 )
@@ -66,7 +66,16 @@ class Agent:
                 "Finance agent is running in fallback mode (missing/invalid model credentials). "
                 f"Details: {self._finance_agent_error}"
             )
+            model_used = "none"
         else:
-            answer_text, _ = await self._finance_agent.run(input_text)
+            answer_text, metadata = await self._finance_agent.run(input_text)
+            model_used = metadata.get("model_key", "unknown")
 
-        await updater.add_artifact(parts=[Part(root=TextPart(text=answer_text))], name="Answer")
+        # Include model information in the response artifact
+        await updater.add_artifact(
+            parts=[
+                Part(root=TextPart(text=answer_text)),
+                Part(root=DataPart(data={"model_used": model_used})),
+            ],
+            name="Answer",
+        )

@@ -1,10 +1,13 @@
 from .finance_agent import Agent
 from .tools import EDGARSearch, GoogleWebSearch, ParseHtmlPage, RetrieveInformation
+from .openrouter_provider import OpenRouterLLM
 from model_library.registry_utils import get_registry_model
 from model_library.base import LLMConfig
 
 from dataclasses import dataclass
 from typing import List
+
+OPENROUTER_PREFIX = "openrouter/"
 
 
 @dataclass
@@ -32,7 +35,14 @@ def get_agent(parameters: Parameters) -> Agent:
             )
         selected_tools[tool] = available_tools[tool]()
 
-    model = get_registry_model(parameters.model_name, parameters.llm_config)
+    # Detect OpenRouter models and use appropriate provider
+    if parameters.model_name.startswith(OPENROUTER_PREFIX):
+        # Extract the model ID after "openrouter/" prefix
+        # e.g., "openrouter/openai/gpt-4o" -> "openai/gpt-4o"
+        model_id = parameters.model_name[len(OPENROUTER_PREFIX):]
+        model = OpenRouterLLM(model_id, parameters.llm_config)
+    else:
+        model = get_registry_model(parameters.model_name, parameters.llm_config)
 
     agent = Agent(tools=selected_tools, llm=model, max_turns=parameters.max_turns)
 
